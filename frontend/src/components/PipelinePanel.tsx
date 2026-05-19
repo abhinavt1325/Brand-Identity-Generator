@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { AgentsState, AppState, AgentStatus } from "@/app/page";
+import { AgentsState, AppState, AgentStatus } from "@/lib/types";
 import { Search, BrainCircuit, PenTool, Type, Network, CheckCircle2, CircleDashed, Loader2 } from "lucide-react";
 
 interface PipelinePanelProps {
