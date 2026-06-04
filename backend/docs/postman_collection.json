@@ -1,0 +1,139 @@
+{
+  "info": {
+    "name": "Brand Identity Generator",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Health",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:3000/health",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "health"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Generate (Sync)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"startupName\": \"Aero\",\n    \"industry\": \"Drone Delivery\",\n    \"valueProp\": \"Fastest last mile delivery on the planet.\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:3000/api/v1/generate",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "api",
+            "v1",
+            "generate"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Create Job",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"startupName\": \"Aero\",\n    \"industry\": \"Drone Delivery\",\n    \"valueProp\": \"Fastest last mile delivery on the planet.\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:3000/api/v1/jobs",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "api",
+            "v1",
+            "jobs"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Get Job Status",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:3000/api/v1/jobs/:jobId",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "api",
+            "v1",
+            "jobs",
+            ":jobId"
+          ],
+          "variable": [
+            {
+              "key": "jobId",
+              "value": "your-job-id"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Get Job Result",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:3000/api/v1/jobs/:jobId/result",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "api",
+            "v1",
+            "jobs",
+            ":jobId",
+            "result"
+          ],
+          "variable": [
+            {
+              "key": "jobId",
+              "value": "your-job-id"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

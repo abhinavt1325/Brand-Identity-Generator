@@ -21,6 +21,7 @@ export default function RootLayout({
     <html
       lang="en"
       className={`${inter.variable} antialiased`}
+      suppressHydrationWarning
     >
       <body className="bg-slate-50 text-slate-900 min-h-screen font-sans selection:bg-blue-500/30">
         {children}

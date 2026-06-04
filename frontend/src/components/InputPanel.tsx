@@ -49,6 +49,7 @@ export default function InputPanel({ onGenerate, isGenerating }: InputPanelProps
               value={formData.startupName}
               onChange={(e) => setFormData({ ...formData, startupName: e.target.value })}
               disabled={isGenerating}
+              suppressHydrationWarning
             />
           </div>
 
@@ -62,6 +63,7 @@ export default function InputPanel({ onGenerate, isGenerating }: InputPanelProps
               value={formData.industry}
               onChange={(e) => setFormData({ ...formData, industry: e.target.value })}
               disabled={isGenerating}
+              suppressHydrationWarning
             />
           </div>
 
@@ -75,6 +77,7 @@ export default function InputPanel({ onGenerate, isGenerating }: InputPanelProps
               value={formData.valueProp}
               onChange={(e) => setFormData({ ...formData, valueProp: e.target.value })}
               disabled={isGenerating}
+              suppressHydrationWarning
             />
           </div>
 
@@ -82,6 +85,7 @@ export default function InputPanel({ onGenerate, isGenerating }: InputPanelProps
             type="submit"
             disabled={isGenerating || !formData.startupName || !formData.industry}
             className="w-full relative group overflow-hidden rounded-lg bg-blue-600 text-white font-medium py-3 px-4 transition-all hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed mt-8 shadow-[0_4px_14px_0_rgba(37,99,235,0.39)] hover:shadow-[0_6px_20px_rgba(37,99,235,0.23)] hover:-translate-y-[1px]"
+            suppressHydrationWarning
           >
             <span className="relative z-10 flex items-center justify-center gap-2">
               {isGenerating ? (
