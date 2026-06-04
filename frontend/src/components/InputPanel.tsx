@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Sparkles, Activity } from "lucide-react";
-import { BrandData } from "@/app/page";
+import { BrandData } from "@/lib/types";
 
 interface InputPanelProps {
   onGenerate: (data: BrandData) => void;
@@ -35,7 +35,7 @@ export default function InputPanel({ onGenerate, isGenerating }: InputPanelProps
       <div className="flex-1">
         <h2 className="text-2xl font-semibold mb-2 text-white">New Identity</h2>
         <p className="text-slate-400 text-sm mb-8 text-balance">
-          Define your startup's core parameters to initialize the multi-agent generation pipeline.
+          Define your startup&apos;s core parameters to initialize the multi-agent generation pipeline.
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-6">
