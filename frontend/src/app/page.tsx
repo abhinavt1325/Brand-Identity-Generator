@@ -7,36 +7,19 @@ import OutputPanel from "@/components/OutputPanel";
 import { MockData } from "@/lib/mockData";
 
 
-export type AppState = "idle" | "generating" | "done";
+export default function LandingPage() {
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: { staggerChildren: 0.1, delayChildren: 0.2 },
+    },
+  };
 
-export type AgentStatus = "idle" | "processing" | "completed";
-
-export type AgentsState = {
-  research: AgentStatus;
-  strategy: AgentStatus;
-  design: AgentStatus;
-  copy: AgentStatus;
-  coherence: AgentStatus;
-};
-
-export type BrandData = {
-  startupName: string;
-  industry: string;
-  valueProp: string;
-};
-
-export default function Dashboard() {
-  const [appState, setAppState] = useState<AppState>("idle");
-  const [brandData, setBrandData] = useState<BrandData>({ startupName: "", industry: "", valueProp: "" });
-  const [mockOutput, setMockOutput] = useState<MockData | null>(null);
-  
-  const [agents, setAgents] = useState<AgentsState>({
-    research: "idle",
-    strategy: "idle",
-    design: "idle",
-    copy: "idle",
-    coherence: "idle",
-  });
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" as const } },
+  };
 
   const pollIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -102,30 +85,55 @@ export default function Dashboard() {
     }
   };
 
-  return (
-    <main className="flex h-screen w-full bg-slate-50 text-slate-900 overflow-hidden font-sans">
-      {/* Left Panel: Input */}
-      <section className="w-1/4 h-full bg-slate-900 text-slate-50 flex-shrink-0 z-20 shadow-2xl relative">
-        <InputPanel onGenerate={handleGenerate} isGenerating={appState === "generating"} />
-      </section>
-
-      {/* Center Panel: Pipeline */}
-      <section className="w-1/3 h-full border-r border-slate-200 bg-white flex-shrink-0 relative overflow-y-auto z-10 shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
-        <PipelinePanel agents={agents} appState={appState} />
-      </section>
-
-      {/* Right Panel: Output Feed */}
-      <section className="flex-1 h-full bg-slate-50/50 relative overflow-y-auto scroll-smooth">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-blue-100/40 via-transparent to-transparent pointer-events-none fixed" />
-        {mockOutput && (
-          <OutputPanel agents={agents} appState={appState} data={brandData} mockOutput={mockOutput} />
-        )}
-        {!mockOutput && (
-          <div className="h-full flex flex-col items-center justify-center text-slate-400">
-            <p>Awaiting initialization...</p>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[
+              { title: "Deep Market Research", desc: "Our research agent analyzes competitors and market positioning instantly." },
+              { title: "Strategic Positioning", desc: "Develop compelling value propositions and core brand pillars." },
+              { title: "Visual Identity Systems", desc: "Generate color palettes, typography pairs, and logo concepts." },
+              { title: "Brand Voice & Messaging", desc: "Craft taglines, elevator pitches, and consistent brand tone." },
+              { title: "Automated Coherence Check", desc: "The final agent ensures perfect alignment across all generated assets." },
+              { title: "Export Ready Assets", desc: "Download your brand guidelines directly to PDF or Figma tokens." }
+            ].map((feature, i) => (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.1, duration: 0.4 }}
+                key={feature.title}
+                className="p-8 rounded-3xl bg-slate-50 border border-slate-100 hover:border-blue-200 hover:bg-white hover:shadow-[0_8px_30px_rgba(0,0,0,0.04)] transition-all duration-300"
+              >
+                <h3 className="text-xl font-semibold mb-3">{feature.title}</h3>
+                <p className="text-slate-500 leading-relaxed">{feature.desc}</p>
+              </motion.div>
+            ))}
           </div>
-        )}
+        </div>
       </section>
+
+      {/* Final CTA */}
+      <section className="py-24 relative overflow-hidden">
+        <div className="absolute inset-0 bg-slate-900" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-blue-900/40 via-transparent to-transparent pointer-events-none" />
+        
+        <div className="max-w-4xl mx-auto px-6 relative z-10 text-center">
+          <h2 className="text-4xl font-bold text-white mb-6">Start Building Your Brand</h2>
+          <p className="text-blue-200 mb-10 text-lg max-w-2xl mx-auto">
+            Join innovative startups using BrandForge to establish their market presence in record time.
+          </p>
+          <Link
+            href="/login"
+            className="inline-flex items-center gap-2 px-8 py-4 bg-white text-slate-900 rounded-full font-semibold hover:bg-slate-50 transition-colors shadow-xl"
+          >
+            Launch Prototype
+            <ArrowRight className="w-4 h-4" />
+          </Link>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="py-8 border-t border-slate-100 text-center text-slate-500 text-sm">
+        <p>© 2026 BrandForge. Prototype demo.</p>
+      </footer>
     </main>
   );
 }
