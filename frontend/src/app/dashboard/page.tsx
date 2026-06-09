@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import InputPanel from "@/components/InputPanel";
 import PipelinePanel from "@/components/PipelinePanel";
 import OutputPanel from "@/components/OutputPanel";
@@ -21,15 +21,13 @@ export default function Dashboard() {
     coherence: "idle",
   });
 
-  const handleGenerate = (data: BrandData) => {
+  const pollIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  const handleGenerate = async (data: BrandData) => {
     setBrandData(data);
     setAppState("generating");
-    
-    // Generate contextual mock data
-    const generatedData = getMockData(data.industry);
-    setMockOutput(generatedData);
+    setMockOutput(null);
 
-    // Reset agents
     setAgents({
       research: "idle",
       strategy: "idle",
@@ -38,29 +36,53 @@ export default function Dashboard() {
       coherence: "idle",
     });
 
-    // Mock the pipeline sequence with realistic staggered delays
-    const sequence = [
-      { key: "research" as const, delay: 500, duration: 3000 },
-      { key: "strategy" as const, delay: 3500, duration: 3000 },
-      { key: "design" as const, delay: 6500, duration: 2500 },
-      { key: "copy" as const, delay: 9000, duration: 3000 },
-      { key: "coherence" as const, delay: 12000, duration: 2500 },
-    ];
+    try {
+      const response = await fetch("http://localhost:3001/api/v1/jobs", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      
+      const { jobId } = await response.json();
+      
+      if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
 
-    sequence.forEach(({ key, delay, duration }) => {
-      setTimeout(() => {
-        setAgents((prev) => ({ ...prev, [key]: "processing" }));
-      }, delay);
+      pollIntervalRef.current = setInterval(async () => {
+        try {
+          const statusRes = await fetch(`http://localhost:3001/api/v1/jobs/${jobId}`);
+          if (!statusRes.ok) return;
+          const job = await statusRes.json();
+          
+          setAgents({
+            research: job.stages.research,
+            strategy: job.stages.strategy,
+            design: job.stages.design,
+            copy: job.stages.copy,
+            coherence: job.stages.coherence,
+          });
 
-      setTimeout(() => {
-        setAgents((prev) => ({ ...prev, [key]: "completed" }));
-      }, delay + duration);
-    });
+          if (job.status === "completed") {
+            if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
+            
+            const resultRes = await fetch(`http://localhost:3001/api/v1/jobs/${jobId}/result`);
+            const resultData = await resultRes.json();
+            setMockOutput(resultData.result);
+            setAppState("done");
+          } else if (job.status === "failed") {
+            if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
+            setAppState("idle");
+            alert("Generation failed: " + (job.error?.message || "Unknown error"));
+          }
+        } catch (e) {
+          console.error("Polling error", e);
+        }
+      }, 1000);
 
-    // Complete the app state
-    setTimeout(() => {
-      setAppState("done");
-    }, 15000); // After all agents finish
+    } catch (err) {
+      console.error(err);
+      setAppState("idle");
+      alert("Failed to connect to backend on port 3001");
+    }
   };
 
   return (
