@@ -1,5 +1,5 @@
 "use client";
-import { motion, AnimatePresence } from "framer-motion";
+import { useState, useEffect } from "react";
 import { AgentsState, BrandData } from "@/lib/types";
 import { MockData } from "@/lib/mockData";
 import {
@@ -15,11 +15,19 @@ interface OutputPanelProps {
   mockOutput: MockData;
 }
 
-const cardAnim = {
-  initial: { opacity: 0, y: 28 },
-  animate: { opacity: 1, y: 0 },
-  transition: { duration: 0.55, ease: "easeOut" as const },
-};
+function useMounted() {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
+  return mounted;
+}
+
+function cardStyle(mounted: boolean, delay = 0): React.CSSProperties {
+  return {
+    opacity: mounted ? 1 : 0,
+    transform: mounted ? "translateY(0)" : "translateY(28px)",
+    transition: `opacity 0.55s ease-out ${delay}s, transform 0.55s ease-out ${delay}s`,
+  };
+}
 
 function SectionHeader({ icon: Icon, label, color = "blue" }: { icon: React.ElementType; label: string; color?: string }) {
   const colors: Record<string, string> = {
@@ -60,11 +68,12 @@ function MetricBar({ label, value }: { label: string; value: number }) {
         <span className="font-bold text-slate-800">{value}%</span>
       </div>
       <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
-        <motion.div
+        <div
           className="h-full bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full"
-          initial={{ width: 0 }}
-          animate={{ width: `${value}%` }}
-          transition={{ duration: 1, ease: "easeOut" as const, delay: 0.3 }}
+          style={{
+            width: `${value}%`,
+            transition: "width 1s ease-out 0.3s",
+          }}
         />
       </div>
     </div>
@@ -73,8 +82,9 @@ function MetricBar({ label, value }: { label: string; value: number }) {
 
 // ── RESEARCH CARD ─────────────────────────────────────────────────────────────
 function ResearchCard({ data }: { data: MockData["research"] }) {
+  const mounted = useMounted();
   return (
-    <motion.div {...cardAnim} className="p-8 rounded-2xl bg-white border border-slate-200/60 shadow-sm space-y-8">
+    <div style={cardStyle(mounted)} className="p-8 rounded-2xl bg-white border border-slate-200/60 shadow-sm space-y-8">
       <SectionHeader icon={Target} label="Market Intelligence" color="blue" />
 
       {/* Competitor Analysis */}
@@ -135,14 +145,15 @@ function ResearchCard({ data }: { data: MockData["research"] }) {
         <h4 className="text-xs font-bold text-blue-400 uppercase tracking-widest mb-2">Market Positioning Insight</h4>
         <p className="text-blue-800 font-medium leading-relaxed text-sm">{data.marketPositioning}</p>
       </div>
-    </motion.div>
+    </div>
   );
 }
 
 // ── STRATEGY CARD ─────────────────────────────────────────────────────────────
 function StrategyCard({ data }: { data: MockData["strategy"] }) {
+  const mounted = useMounted();
   return (
-    <motion.div {...cardAnim} className="p-8 rounded-2xl bg-white border border-slate-200/60 shadow-sm space-y-8">
+    <div style={cardStyle(mounted)} className="p-8 rounded-2xl bg-white border border-slate-200/60 shadow-sm space-y-8">
       <SectionHeader icon={MessageSquare} label="Brand Strategy" color="violet" />
 
       {/* Mission & Vision */}
@@ -186,14 +197,15 @@ function StrategyCard({ data }: { data: MockData["strategy"] }) {
         </h4>
         <p className="text-slate-600 leading-relaxed text-sm">{data.messagingStrategy}</p>
       </div>
-    </motion.div>
+    </div>
   );
 }
 
 // ── DESIGN CARD ───────────────────────────────────────────────────────────────
 function DesignCard({ data }: { data: MockData["design"] }) {
+  const mounted = useMounted();
   return (
-    <motion.div {...cardAnim} className="p-8 rounded-2xl bg-white border border-slate-200/60 shadow-sm space-y-8">
+    <div style={cardStyle(mounted)} className="p-8 rounded-2xl bg-white border border-slate-200/60 shadow-sm space-y-8">
       <SectionHeader icon={Palette} label="Design System" color="emerald" />
 
       {/* Primary Palette */}
@@ -202,10 +214,7 @@ function DesignCard({ data }: { data: MockData["design"] }) {
         <div className="flex flex-wrap gap-5">
           {data.primaryPalette.map((c, i) => (
             <div key={i} className="flex flex-col gap-2">
-              <motion.div
-                initial={{ scale: 0, rotate: -10 }}
-                animate={{ scale: 1, rotate: 0 }}
-                transition={{ delay: i * 0.1, type: "spring" as const, bounce: 0.4 }}
+              <div
                 className="w-20 h-20 rounded-2xl shadow-lg ring-1 ring-black/5"
                 style={{ backgroundColor: c.hex }}
               />
@@ -282,14 +291,15 @@ function DesignCard({ data }: { data: MockData["design"] }) {
         <h4 className="text-xs font-bold text-emerald-400 uppercase tracking-widest mb-2">Moodboard Summary</h4>
         <p className="text-emerald-900 leading-relaxed text-sm font-medium">{data.moodboard}</p>
       </div>
-    </motion.div>
+    </div>
   );
 }
 
 // ── COPY CARD ─────────────────────────────────────────────────────────────────
 function CopyCard({ data }: { data: MockData["copy"] }) {
+  const mounted = useMounted();
   return (
-    <motion.div {...cardAnim} className="space-y-6">
+    <div style={cardStyle(mounted)} className="space-y-6">
       {/* Tagline Hero */}
       <div className="p-10 rounded-2xl bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 shadow-2xl relative overflow-hidden">
         <div className="absolute -right-16 -top-16 w-72 h-72 bg-white/10 rounded-full blur-3xl" />
@@ -300,13 +310,13 @@ function CopyCard({ data }: { data: MockData["copy"] }) {
             <Typewriter text={`"${data.tagline}"`} />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-white/10 p-6 rounded-xl backdrop-blur-sm border border-white/10">
-            <div>
+            <div className="min-w-0 overflow-hidden">
               <h4 className="text-xs font-bold text-blue-200 mb-2 uppercase tracking-wider">Elevator Pitch</h4>
-              <Typewriter text={data.elevatorPitch} className="text-blue-50 leading-relaxed text-sm font-medium" />
+              <Typewriter text={data.elevatorPitch} className="text-blue-50 leading-relaxed text-sm font-medium break-words" />
             </div>
-            <div>
+            <div className="min-w-0 overflow-hidden">
               <h4 className="text-xs font-bold text-blue-200 mb-2 uppercase tracking-wider">Social Media Tone</h4>
-              <Typewriter text={data.socialMediaTone} className="text-blue-100 leading-relaxed text-sm" delay={0.02} />
+              <Typewriter text={data.socialMediaTone} className="text-blue-100 leading-relaxed text-sm break-words" delay={0.02} />
             </div>
           </div>
         </div>
@@ -340,7 +350,7 @@ function CopyCard({ data }: { data: MockData["copy"] }) {
           </div>
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 }
 
@@ -353,22 +363,18 @@ function CoherenceCard({ data }: { data: MockData["coherence"] }) {
     { label: "Messaging Alignment", value: data.messagingAlignment },
     { label: "Strategic Consistency", value: data.strategicConsistency },
   ];
+  const mounted = useMounted();
   return (
-    <motion.div {...cardAnim} className="p-8 rounded-2xl bg-white border-2 border-blue-100 shadow-sm relative overflow-hidden">
+    <div style={cardStyle(mounted)} className="p-8 rounded-2xl bg-white border-2 border-blue-100 shadow-sm relative overflow-hidden">
       <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-gradient-to-b from-blue-400 to-indigo-500" />
       <div className="pl-4">
         <SectionHeader icon={ActivitySquare} label="Coherence Analysis" color="blue" />
         <div className="flex flex-col md:flex-row gap-8">
           {/* Score Circle */}
           <div className="shrink-0 flex flex-col items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100 rounded-2xl p-8">
-            <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ type: "spring" as const, bounce: 0.5, delay: 0.4 }}
-              className="text-7xl font-black text-blue-600 tracking-tighter tabular-nums"
-            >
+            <div className="text-7xl font-black text-blue-600 tracking-tighter tabular-nums">
               {data.score}%
-            </motion.div>
+            </div>
             <div className="text-xs font-bold text-blue-400 uppercase tracking-widest mt-2">Global Coherence</div>
           </div>
 
@@ -396,14 +402,15 @@ function CoherenceCard({ data }: { data: MockData["coherence"] }) {
           </div>
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 }
 
 // ── FINAL BRAND KIT SUMMARY ───────────────────────────────────────────────────
 function FinalBrandKit({ data, mock }: { data: BrandData; mock: MockData }) {
+  const mounted = useMounted();
   return (
-    <motion.div {...cardAnim} className="rounded-2xl overflow-hidden border border-slate-200 shadow-xl">
+    <div style={cardStyle(mounted)} className="rounded-2xl overflow-hidden border border-slate-200 shadow-xl">
       {/* Header */}
       <div className="bg-slate-900 p-8 relative overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_#1e3a8a,_transparent_60%)]" />
@@ -460,7 +467,7 @@ function FinalBrandKit({ data, mock }: { data: BrandData; mock: MockData }) {
           <div className="text-blue-100 text-sm">{mock.copy.heroSubheadline}</div>
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 }
 
@@ -470,31 +477,19 @@ export default function OutputPanel({ agents, data, mockOutput }: OutputPanelPro
     <div className="h-full p-10 overflow-y-auto z-10 relative">
       <div className="max-w-4xl mx-auto space-y-8 pb-32">
         {/* Page Header */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="border-b border-slate-200 pb-8">
+        <div className="border-b border-slate-200 pb-8">
           <h1 className="text-4xl font-bold tracking-tight text-slate-900 mb-2">{data.startupName || "Startup"}</h1>
           <p className="text-lg text-slate-500 font-medium">
             Brand Identity Protocol for <span className="text-blue-600">{data.industry || "Unknown"}</span>
           </p>
-        </motion.div>
+        </div>
 
-        <AnimatePresence>
-          {agents.research === "completed" && <ResearchCard key="research" data={mockOutput.research} />}
-        </AnimatePresence>
-        <AnimatePresence>
-          {agents.strategy === "completed" && <StrategyCard key="strategy" data={mockOutput.strategy} />}
-        </AnimatePresence>
-        <AnimatePresence>
-          {agents.design === "completed" && <DesignCard key="design" data={mockOutput.design} />}
-        </AnimatePresence>
-        <AnimatePresence>
-          {agents.copy === "completed" && <CopyCard key="copy" data={mockOutput.copy} />}
-        </AnimatePresence>
-        <AnimatePresence>
-          {agents.coherence === "completed" && <CoherenceCard key="coherence" data={mockOutput.coherence} />}
-        </AnimatePresence>
-        <AnimatePresence>
-          {agents.coherence === "completed" && <FinalBrandKit key="finalkit" data={data} mock={mockOutput} />}
-        </AnimatePresence>
+        {agents.research === "completed" && <ResearchCard data={mockOutput.research} />}
+        {agents.strategy === "completed" && <StrategyCard data={mockOutput.strategy} />}
+        {agents.design === "completed" && <DesignCard data={mockOutput.design} />}
+        {agents.copy === "completed" && <CopyCard data={mockOutput.copy} />}
+        {agents.coherence === "completed" && <CoherenceCard data={mockOutput.coherence} />}
+        {agents.coherence === "completed" && <FinalBrandKit data={data} mock={mockOutput} />}
       </div>
     </div>
   );

@@ -1,60 +1,65 @@
-import { motion, useAnimation, useInView, Variants } from "framer-motion";
-import { useEffect, useRef } from "react";
+"use client";
+import { useEffect, useRef, useState } from "react";
 
 interface TypewriterProps {
   text: string;
-  delay?: number;
+  delay?: number; // seconds before starting (kept for API compat)
   className?: string;
 }
 
 export default function Typewriter({ text, delay = 0, className = "" }: TypewriterProps) {
-  const controls = useAnimation();
-  const ref = useRef(null);
-  const isInView = useInView(ref, { once: true });
+  const [displayed, setDisplayed] = useState("");
+  const [started, setStarted] = useState(false);
+  const ref = useRef<HTMLSpanElement>(null);
+  const indexRef = useRef(0);
 
+  // Start typing when element is in view
   useEffect(() => {
-    if (isInView) {
-      controls.start("visible");
-    }
-  }, [isInView, controls]);
+    const el = ref.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) setStarted(true); },
+      { threshold: 0.1 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
-  const container: Variants = {
-    hidden: { opacity: 0 },
-    visible: (i = 1) => ({
-      opacity: 1,
-      transition: { staggerChildren: 0.015, delayChildren: delay * i },
-    }),
-  };
+  // Type out characters once started
+  useEffect(() => {
+    if (!started) return;
+    indexRef.current = 0;
+    setDisplayed("");
 
-  const child: Variants = {
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { type: "spring", damping: 12, stiffness: 100 },
-    },
-    hidden: {
-      opacity: 0,
-      y: 10,
-      transition: { type: "spring", damping: 12, stiffness: 100 },
-    },
-  };
+    const startTimeout = setTimeout(() => {
+      const interval = setInterval(() => {
+        indexRef.current += 1;
+        setDisplayed(text.slice(0, indexRef.current));
+        if (indexRef.current >= text.length) clearInterval(interval);
+      }, 18);
+      return () => clearInterval(interval);
+    }, delay * 1000);
 
-  const words = text.split(" ");
+    return () => clearTimeout(startTimeout);
+  }, [started, text, delay]);
 
   return (
-    <motion.div
-      style={{ overflow: "hidden", display: "flex", flexWrap: "wrap" }}
-      variants={container}
-      initial="hidden"
-      animate={controls}
-      ref={ref}
-      className={className}
-    >
-      {words.map((word, index) => (
-        <motion.span variants={child} style={{ marginRight: "0.25em" }} key={index}>
-          {word}
-        </motion.span>
-      ))}
-    </motion.div>
+    <span ref={ref} className={className}>
+      {displayed}
+      {displayed.length < text.length && (
+        <span
+          aria-hidden="true"
+          style={{
+            display: "inline-block",
+            width: "2px",
+            height: "1em",
+            background: "currentColor",
+            marginLeft: "1px",
+            verticalAlign: "text-bottom",
+            animation: "blink 0.8s step-end infinite",
+          }}
+        />
+      )}
+    </span>
   );
 }
