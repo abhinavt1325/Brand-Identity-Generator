@@ -478,9 +478,9 @@ export default function OutputPanel({ agents, data, mockOutput }: OutputPanelPro
       <div className="max-w-4xl mx-auto space-y-8 pb-32">
         {/* Page Header */}
         <div className="border-b border-slate-200 pb-8">
-          <h1 className="text-4xl font-bold tracking-tight text-slate-900 mb-2">{data.startupName || "Startup"}</h1>
+          <h1 className="text-4xl font-bold tracking-tight text-slate-900 mb-2">{data?.startupName || "Startup"}</h1>
           <p className="text-lg text-slate-500 font-medium">
-            Brand Identity Protocol for <span className="text-blue-600">{data.industry || "Unknown"}</span>
+            Brand Identity Protocol for <span className="text-blue-600">{data?.industry || "Unknown"}</span>
           </p>
         </div>
 

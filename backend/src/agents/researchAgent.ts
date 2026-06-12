@@ -4,8 +4,20 @@ import { OpenAIService } from '../services/openai.service';
 import { logger } from '../utils/logger';
 
 export const researchAgent = async (input: GenerateInput): Promise<ResearchResult> => {
-  const systemPrompt = `You are an expert market researcher. Conduct preliminary research for a new startup. Return the output matching the requested JSON schema.`;
-  const userPrompt = `Startup Name: ${input.startupName}\nIndustry: ${input.industry}\nValue Proposition: ${input.valueProp}\n\nProvide an analysis of competitors, target audience, and market trends.`;
+  const systemPrompt = `You are an expert market researcher. Conduct preliminary research for a new startup.`;
+  const userPrompt = `Startup Name: ${input.startupName}\nIndustry: ${input.industry}\nValue Proposition: ${input.valueProp}
+
+Provide market research with these EXACT top-level keys:
+- "competitors": an array of objects, each with "name" (string) and "analysis" (string)
+- "audience": a string describing the target audience
+- "marketTrends": an array of strings listing market trends
+
+Your JSON must look like:
+{
+  "competitors": [{"name": "...", "analysis": "..."}],
+  "audience": "...",
+  "marketTrends": ["...", "..."]
+}`;
 
   try {
     return await OpenAIService.generateStructuredOutput(

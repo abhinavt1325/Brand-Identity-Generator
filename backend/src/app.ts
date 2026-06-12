@@ -5,6 +5,7 @@ import { errorHandler } from './utils/errors';
 import healthRoutes from './routes/health.route';
 import generateRoutes from './routes/generate.route';
 import jobsRoutes from './routes/jobs.route';
+import authRoutes from './routes/auth.route';
 import { v4 as uuidv4 } from 'uuid';
 
 export const buildApp = async (): Promise<FastifyInstance> => {
@@ -23,6 +24,7 @@ export const buildApp = async (): Promise<FastifyInstance> => {
 
   // Register Routes
   app.register(healthRoutes);
+  app.register(authRoutes, { prefix: '/api/v1' });
   app.register(generateRoutes, { prefix: '/api/v1' });
   app.register(jobsRoutes, { prefix: '/api/v1' });
 

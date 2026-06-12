@@ -4,8 +4,23 @@ import { OpenAIService } from '../services/openai.service';
 import { logger } from '../utils/logger';
 
 export const copyAgent = async (input: GenerateInput, strategy: StrategyResult): Promise<CopyResult> => {
-  const systemPrompt = `You are an expert copywriter. Based on the startup's info and strategy, write the foundational brand copy. Return the output matching the requested JSON schema.`;
-  const userPrompt = `Startup Name: ${input.startupName}\nValue Proposition: ${input.valueProp}\n\nBrand Strategy:\n${JSON.stringify(strategy)}\n\nWrite a tagline, elevator pitch, and brand story.`;
+  const systemPrompt = `You are an expert copywriter. Based on the startup's info and strategy, write the foundational brand copy.`;
+  const userPrompt = `Startup Name: ${input.startupName}\nValue Proposition: ${input.valueProp}
+
+Brand Strategy:
+${JSON.stringify(strategy)}
+
+Write brand copy using these EXACT top-level keys:
+- "tagline": a short, memorable brand tagline (string)
+- "elevatorPitch": a 2-3 sentence elevator pitch (string)
+- "story": the brand origin and mission story, 3-4 sentences (string)
+
+Your JSON must look like:
+{
+  "tagline": "...",
+  "elevatorPitch": "...",
+  "story": "..."
+}`;
 
   try {
     return await OpenAIService.generateStructuredOutput(

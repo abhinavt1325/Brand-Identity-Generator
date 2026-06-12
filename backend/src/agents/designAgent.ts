@@ -4,8 +4,27 @@ import { OpenAIService } from '../services/openai.service';
 import { logger } from '../utils/logger';
 
 export const designAgent = async (input: GenerateInput, strategy: StrategyResult): Promise<DesignResult> => {
-  const systemPrompt = `You are an expert brand designer. Based on the startup's strategy, define the design system. Return the output matching the requested JSON schema.`;
-  const userPrompt = `Startup Name: ${input.startupName}\nIndustry: ${input.industry}\n\nBrand Strategy:\n${JSON.stringify(strategy)}\n\nDefine a 3-color palette, typography (heading/body), and a logo direction.`;
+  const systemPrompt = `You are an expert brand designer. Based on the startup's strategy, define the design system.`;
+  const userPrompt = `Startup Name: ${input.startupName}\nIndustry: ${input.industry}
+
+Brand Strategy:
+${JSON.stringify(strategy)}
+
+Define a design system using these EXACT top-level keys:
+- "colorPalette": an array of exactly 3 objects, each with "hex" (string, e.g. "#FF5733") and "name" (string)
+- "typography": an object with "heading" (string font name) and "body" (string font name)
+- "logoDirection": a string describing the logo concept
+
+Your JSON must look like:
+{
+  "colorPalette": [
+    {"hex": "#FF5733", "name": "Primary"},
+    {"hex": "#F3F4F6", "name": "Background"},
+    {"hex": "#1F2937", "name": "Text"}
+  ],
+  "typography": {"heading": "Inter", "body": "Roboto"},
+  "logoDirection": "..."
+}`;
 
   try {
     return await OpenAIService.generateStructuredOutput(

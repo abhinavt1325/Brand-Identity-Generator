@@ -23,6 +23,7 @@ export type StageStatus = 'idle' | 'processing' | 'completed' | 'failed';
 
 export interface Job {
   jobId: string;
+  userId?: string | null;
   status: JobStatus;
   input: GenerateInput;
   result?: Partial<GenerateResult>;

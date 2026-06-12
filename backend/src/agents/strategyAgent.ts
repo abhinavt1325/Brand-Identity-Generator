@@ -4,8 +4,23 @@ import { OpenAIService } from '../services/openai.service';
 import { logger } from '../utils/logger';
 
 export const strategyAgent = async (input: GenerateInput, research: ResearchResult): Promise<StrategyResult> => {
-  const systemPrompt = `You are an expert brand strategist. Based on the startup's info and market research, formulate a brand strategy. Return the output matching the requested JSON schema.`;
-  const userPrompt = `Startup Name: ${input.startupName}\nIndustry: ${input.industry}\nValue Proposition: ${input.valueProp}\n\nResearch Data:\n${JSON.stringify(research)}\n\nDefine the positioning, tone of voice, and brand mission.`;
+  const systemPrompt = `You are an expert brand strategist. Based on the startup's info and market research, formulate a brand strategy.`;
+  const userPrompt = `Startup Name: ${input.startupName}\nIndustry: ${input.industry}\nValue Proposition: ${input.valueProp}
+
+Research Data:
+${JSON.stringify(research)}
+
+Define the positioning, tone of voice, and brand mission using these EXACT top-level keys:
+- "positioning": a string describing the brand's market position
+- "tone": a string describing the tone of voice
+- "mission": a string with the brand mission statement
+
+Your JSON must look like:
+{
+  "positioning": "...",
+  "tone": "...",
+  "mission": "..."
+}`;
 
   try {
     return await OpenAIService.generateStructuredOutput(

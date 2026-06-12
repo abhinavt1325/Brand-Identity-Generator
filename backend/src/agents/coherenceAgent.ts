@@ -9,8 +9,28 @@ export const coherenceAgent = async (
   design: DesignResult,
   copy: CopyResult
 ): Promise<CoherenceResult> => {
-  const systemPrompt = `You are an expert brand auditor. Review the generated brand components for consistency and alignment. Return the output matching the requested JSON schema.`;
-  const userPrompt = `Review these components for coherence:\n\nResearch: ${JSON.stringify(research)}\nStrategy: ${JSON.stringify(strategy)}\nDesign: ${JSON.stringify(design)}\nCopy: ${JSON.stringify(copy)}\n\nProvide an overall score (0-100), alignment metrics, and a validation summary.`;
+  const systemPrompt = `You are an expert brand auditor. Review the generated brand components for consistency and alignment.`;
+  const userPrompt = `Review these brand components for coherence:
+
+Research: ${JSON.stringify(research)}
+Strategy: ${JSON.stringify(strategy)}
+Design: ${JSON.stringify(design)}
+Copy: ${JSON.stringify(copy)}
+
+Evaluate brand coherence using these EXACT top-level keys:
+- "score": a number from 0 to 100 indicating overall brand coherence
+- "alignmentMetrics": an array of objects, each with "label" (string) and "value" (number 0-100)
+- "validationSummary": a string summarising the coherence assessment
+
+Your JSON must look like:
+{
+  "score": 87,
+  "alignmentMetrics": [
+    {"label": "Tone vs Audience", "value": 90},
+    {"label": "Design vs Strategy", "value": 85}
+  ],
+  "validationSummary": "..."
+}`;
 
   try {
     return await OpenAIService.generateStructuredOutput(

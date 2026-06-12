@@ -2,12 +2,17 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Sparkles, ArrowRight, Lock, Mail } from "lucide-react";
+import { Sparkles, ArrowRight, Lock, Mail, User } from "lucide-react";
+import { setToken, setUser } from "@/lib/auth";
 
 export default function LoginPage() {
   const router = useRouter();
+  const [mode, setMode] = useState<"login" | "signup">("login");
+  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
 
@@ -16,13 +21,58 @@ export default function LoginPage() {
     setIsMounted(true);
   }, []);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleToggleMode = () => {
+    setMode(mode === "login" ? "signup" : "login");
+    setError(null);
+    setUsername("");
+    setEmail("");
+    setPassword("");
+    setConfirmPassword("");
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (email && password) {
-      setIsLoading(true);
-      setTimeout(() => {
-        router.push("/dashboard");
-      }, 800);
+    setError(null);
+
+    if (mode === "signup" && password !== confirmPassword) {
+      setError("Passwords do not match");
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const url = mode === "login"
+        ? "http://localhost:3001/api/v1/auth/login"
+        : "http://localhost:3001/api/v1/auth/signup";
+
+      const body = mode === "login"
+        ? { username, password }
+        : { username, email, password, confirmPassword };
+
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.message || "An authentication error occurred");
+        setIsLoading(false);
+        return;
+      }
+
+      // Save token and user details to local storage
+      setToken(data.token);
+      setUser(data.user);
+
+      // Redirect to the workspace dashboard
+      router.push("/dashboard");
+    } catch (err: any) {
+      setError("Unable to connect to the authentication server. Please ensure the backend is running.");
+      setIsLoading(false);
     }
   };
 
@@ -32,7 +82,6 @@ export default function LoginPage() {
     zIndex: 10,
     padding: "1rem",
     position: "relative",
-    // Animate in after mount
     opacity: isMounted ? 1 : 0,
     transform: isMounted ? "translateY(0)" : "translateY(24px)",
     transition: "opacity 0.6s ease-out, transform 0.6s ease-out",
@@ -105,7 +154,7 @@ export default function LoginPage() {
         />
       </div>
 
-      {/* Login Card — CSS transition replaces framer-motion to avoid hydration mismatch */}
+      {/* Login / Signup Card */}
       <div style={cardStyle}>
         <div
           style={{
@@ -113,8 +162,7 @@ export default function LoginPage() {
             backdropFilter: "blur(24px)",
             WebkitBackdropFilter: "blur(24px)",
             border: "1px solid rgba(255, 255, 255, 0.6)",
-            boxShadow:
-              "0 8px 40px rgba(15, 23, 42, 0.08), 0 1px 2px rgba(15, 23, 42, 0.04)",
+            boxShadow: "0 8px 40px rgba(15, 23, 42, 0.08), 0 1px 2px rgba(15, 23, 42, 0.04)",
             borderRadius: "1.5rem",
             padding: "2.5rem",
             position: "relative",
@@ -127,8 +175,7 @@ export default function LoginPage() {
             style={{
               position: "absolute",
               inset: 0,
-              background:
-                "linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.4), rgba(255,255,255,0.1))",
+              background: "linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.4), rgba(255,255,255,0.1))",
               pointerEvents: "none",
             }}
           />
@@ -169,7 +216,7 @@ export default function LoginPage() {
                 textAlign: "center",
               }}
             >
-              Welcome to BrandForge
+              {mode === "login" ? "Welcome to BrandForge" : "Create Account"}
             </h1>
             <p
               style={{
@@ -179,13 +226,35 @@ export default function LoginPage() {
                 textAlign: "center",
               }}
             >
-              Sign in to your AI brand workspace
+              {mode === "login"
+                ? "Sign in to your AI brand workspace"
+                : "Register to build cohesive brand identities with AI"}
             </p>
           </div>
 
+          {/* Error Message Box */}
+          {error && (
+            <div
+              style={{
+                background: "rgba(254, 242, 242, 0.8)",
+                border: "1px solid rgba(254, 226, 226, 1)",
+                borderRadius: "0.75rem",
+                padding: "0.75rem 1rem",
+                marginBottom: "1.25rem",
+                fontSize: "0.825rem",
+                color: "#991b1b",
+                lineHeight: "1.4",
+                zIndex: 1,
+                position: "relative",
+              }}
+            >
+              {error}
+            </div>
+          )}
+
           {/* Form */}
           <form
-            onSubmit={handleLogin}
+            onSubmit={handleSubmit}
             style={{
               display: "flex",
               flexDirection: "column",
@@ -194,10 +263,10 @@ export default function LoginPage() {
               zIndex: 1,
             }}
           >
-            {/* Email Field */}
+            {/* Username Field */}
             <div>
               <label
-                htmlFor="login-email"
+                htmlFor="username"
                 style={{
                   display: "block",
                   fontSize: "0.875rem",
@@ -206,7 +275,7 @@ export default function LoginPage() {
                   marginBottom: "0.375rem",
                 }}
               >
-                Email Address
+                Username
               </label>
               <div style={{ position: "relative" }}>
                 <div
@@ -221,16 +290,16 @@ export default function LoginPage() {
                     alignItems: "center",
                   }}
                 >
-                  <Mail style={{ height: "1.25rem", width: "1.25rem", color: "#94a3b8" }} />
+                  <User style={{ height: "1.25rem", width: "1.25rem", color: "#94a3b8" }} />
                 </div>
                 <input
-                  id="login-email"
-                  type="email"
+                  id="username"
+                  type="text"
                   required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="name@company.com"
-                  autoComplete="email"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  placeholder="brandbuilder"
+                  autoComplete="username"
                   style={{
                     display: "block",
                     width: "100%",
@@ -259,10 +328,77 @@ export default function LoginPage() {
               </div>
             </div>
 
+            {/* Email Field (Signup Mode only) */}
+            {mode === "signup" && (
+              <div>
+                <label
+                  htmlFor="email"
+                  style={{
+                    display: "block",
+                    fontSize: "0.875rem",
+                    fontWeight: 500,
+                    color: "#374151",
+                    marginBottom: "0.375rem",
+                  }}
+                >
+                  Email Address
+                </label>
+                <div style={{ position: "relative" }}>
+                  <div
+                    aria-hidden="true"
+                    style={{
+                      position: "absolute",
+                      top: "50%",
+                      left: "0.75rem",
+                      transform: "translateY(-50%)",
+                      pointerEvents: "none",
+                      display: "flex",
+                      alignItems: "center",
+                    }}
+                  >
+                    <Mail style={{ height: "1.25rem", width: "1.25rem", color: "#94a3b8" }} />
+                  </div>
+                  <input
+                    id="email"
+                    type="email"
+                    required={mode === "signup"}
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="name@company.com"
+                    autoComplete="email"
+                    style={{
+                      display: "block",
+                      width: "100%",
+                      paddingLeft: "2.75rem",
+                      paddingRight: "0.75rem",
+                      paddingTop: "0.625rem",
+                      paddingBottom: "0.625rem",
+                      border: "1px solid #e2e8f0",
+                      borderRadius: "0.75rem",
+                      background: "rgba(255,255,255,0.7)",
+                      color: "#0f172a",
+                      fontSize: "0.9rem",
+                      outline: "none",
+                      boxSizing: "border-box",
+                      transition: "border-color 0.2s, box-shadow 0.2s",
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.borderColor = "#3b82f6";
+                      e.target.style.boxShadow = "0 0 0 3px rgba(59,130,246,0.12)";
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = "#e2e8f0";
+                      e.target.style.boxShadow = "none";
+                    }}
+                  />
+                </div>
+              </div>
+            )}
+
             {/* Password Field */}
             <div>
               <label
-                htmlFor="login-password"
+                htmlFor="password"
                 style={{
                   display: "block",
                   fontSize: "0.875rem",
@@ -271,7 +407,7 @@ export default function LoginPage() {
                   marginBottom: "0.375rem",
                 }}
               >
-                Password
+                {mode === "login" ? "Password" : "Create Password"}
               </label>
               <div style={{ position: "relative" }}>
                 <div
@@ -289,13 +425,13 @@ export default function LoginPage() {
                   <Lock style={{ height: "1.25rem", width: "1.25rem", color: "#94a3b8" }} />
                 </div>
                 <input
-                  id="login-password"
+                  id="password"
                   type="password"
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  autoComplete="current-password"
+                  autoComplete={mode === "login" ? "current-password" : "new-password"}
                   style={{
                     display: "block",
                     width: "100%",
@@ -324,11 +460,78 @@ export default function LoginPage() {
               </div>
             </div>
 
+            {/* Confirm Password Field (Signup Mode only) */}
+            {mode === "signup" && (
+              <div>
+                <label
+                  htmlFor="confirm-password"
+                  style={{
+                    display: "block",
+                    fontSize: "0.875rem",
+                    fontWeight: 500,
+                    color: "#374151",
+                    marginBottom: "0.375rem",
+                  }}
+                >
+                  Confirm Password
+                </label>
+                <div style={{ position: "relative" }}>
+                  <div
+                    aria-hidden="true"
+                    style={{
+                      position: "absolute",
+                      top: "50%",
+                      left: "0.75rem",
+                      transform: "translateY(-50%)",
+                      pointerEvents: "none",
+                      display: "flex",
+                      alignItems: "center",
+                    }}
+                  >
+                    <Lock style={{ height: "1.25rem", width: "1.25rem", color: "#94a3b8" }} />
+                  </div>
+                  <input
+                    id="confirm-password"
+                    type="password"
+                    required={mode === "signup"}
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="••••••••"
+                    autoComplete="new-password"
+                    style={{
+                      display: "block",
+                      width: "100%",
+                      paddingLeft: "2.75rem",
+                      paddingRight: "0.75rem",
+                      paddingTop: "0.625rem",
+                      paddingBottom: "0.625rem",
+                      border: "1px solid #e2e8f0",
+                      borderRadius: "0.75rem",
+                      background: "rgba(255,255,255,0.7)",
+                      color: "#0f172a",
+                      fontSize: "0.9rem",
+                      outline: "none",
+                      boxSizing: "border-box",
+                      transition: "border-color 0.2s, box-shadow 0.2s",
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.borderColor = "#3b82f6";
+                      e.target.style.boxShadow = "0 0 0 3px rgba(59,130,246,0.12)";
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = "#e2e8f0";
+                      e.target.style.boxShadow = "none";
+                    }}
+                  />
+                </div>
+              </div>
+            )}
+
             {/* Submit Button */}
             <div style={{ paddingTop: "0.5rem" }}>
               <button
                 type="submit"
-                disabled={isLoading || !email || !password}
+                disabled={isLoading || !username || !password || (mode === "signup" && (!email || !confirmPassword))}
                 style={{
                   width: "100%",
                   display: "flex",
@@ -342,30 +545,32 @@ export default function LoginPage() {
                   fontWeight: 600,
                   color: "#ffffff",
                   background:
-                    isLoading || !email || !password ? "#94a3b8" : "#0f172a",
+                    isLoading || !username || !password || (mode === "signup" && (!email || !confirmPassword))
+                      ? "#94a3b8"
+                      : "#0f172a",
                   cursor:
-                    isLoading || !email || !password ? "not-allowed" : "pointer",
+                    isLoading || !username || !password || (mode === "signup" && (!email || !confirmPassword))
+                      ? "not-allowed"
+                      : "pointer",
                   transition: "background 0.2s",
                   letterSpacing: "0.01em",
                 }}
                 onMouseEnter={(e) => {
-                  if (!isLoading && email && password) {
-                    (e.currentTarget as HTMLButtonElement).style.background =
-                      "#1e293b";
+                  if (!isLoading && username && password && (mode === "login" || (email && confirmPassword))) {
+                    (e.currentTarget as HTMLButtonElement).style.background = "#1e293b";
                   }
                 }}
                 onMouseLeave={(e) => {
-                  if (!isLoading && email && password) {
-                    (e.currentTarget as HTMLButtonElement).style.background =
-                      "#0f172a";
+                  if (!isLoading && username && password && (mode === "login" || (email && confirmPassword))) {
+                    (e.currentTarget as HTMLButtonElement).style.background = "#0f172a";
                   }
                 }}
               >
                 {isLoading ? (
-                  "Authenticating..."
+                  mode === "login" ? "Authenticating..." : "Creating Account..."
                 ) : (
                   <>
-                    Enter BrandForge
+                    {mode === "login" ? "Enter BrandForge" : "Register and Create"}
                     <ArrowRight style={{ width: "1rem", height: "1rem" }} />
                   </>
                 )}
@@ -373,18 +578,31 @@ export default function LoginPage() {
             </div>
           </form>
 
-          {/* Footer hint */}
+          {/* Footer toggle (Login / Signup switch) */}
           <div
             style={{
-              marginTop: "1.5rem",
+              marginTop: "1.75rem",
               textAlign: "center",
               position: "relative",
               zIndex: 1,
             }}
           >
-            <p style={{ fontSize: "0.75rem", color: "#94a3b8" }}>
-              Mock login flow. Enter any credentials to continue.
-            </p>
+            <button
+              onClick={handleToggleMode}
+              style={{
+                background: "none",
+                border: "none",
+                fontSize: "0.825rem",
+                color: "#2563eb",
+                cursor: "pointer",
+                fontWeight: 500,
+                textDecoration: "underline",
+              }}
+            >
+              {mode === "login"
+                ? "Don't have an account? Sign Up"
+                : "Already have an account? Sign In"}
+            </button>
           </div>
         </div>
       </div>
