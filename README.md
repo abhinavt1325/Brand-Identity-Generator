@@ -59,11 +59,11 @@ graph TD
     E --> F[Coherence Agent]
     F --> G[Final Brand Kit & PDF]
     
-    style B fill:#f9f,stroke:#333,stroke-width:2px
-    style C fill:#bbf,stroke:#333,stroke-width:2px
-    style D fill:#bfb,stroke:#333,stroke-width:2px
-    style E fill:#bfb,stroke:#333,stroke-width:2px
-    style F fill:#fbb,stroke:#333,stroke-width:2px
+    style B fill:#f9f,stroke:#333,stroke-width:2px,color:#000
+    style C fill:#bbf,stroke:#333,stroke-width:2px,color:#000
+    style D fill:#bfb,stroke:#333,stroke-width:2px,color:#000
+    style E fill:#bfb,stroke:#333,stroke-width:2px,color:#000
+    style F fill:#fbb,stroke:#333,stroke-width:2px,color:#000
 ```
 
 *(For an exhaustive engineering and architecture deep dive, see [ARCHITECTURE.md](./ARCHITECTURE.md))*
