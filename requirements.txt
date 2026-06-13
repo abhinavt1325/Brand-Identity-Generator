@@ -1,0 +1,59 @@
+# ==============================================================================
+# BrandForge Project Tech Stack & Installed Libraries
+# ==============================================================================
+# Note: This project is built using Node.js & TypeScript. The dependencies listed
+# below are installed via npm in the backend and frontend directories.
+# ==============================================================================
+
+# --- Core Tech Stack ---
+Node.js >= 20.0.0
+TypeScript >= 5.0.0
+Next.js >= 16.0.0
+React >= 19.0.0
+Fastify >= 5.0.0
+Neon Postgres (Serverless Database)
+Google Gemini API (via OpenAI-compatible endpoint)
+
+# --- Backend Dependencies (backend/package.json) ---
+# Web Server & Utilities
+fastify == 5.8.5
+fastify-plugin == 5.1.0
+@fastify/cors == 11.2.0
+uuid == 14.0.0
+dotenv == 17.4.2
+pino == 10.3.1
+
+# AI & Schema Validation
+openai == 6.38.0
+zod == 4.4.3
+zod-to-json-schema == 3.25.2
+
+# Database & ORM
+drizzle-orm == 0.45.2
+@neondatabase/serverless == 1.1.0
+
+# Authentication & Security
+jsonwebtoken == 9.0.3
+bcryptjs == 3.0.3
+
+# --- Frontend Dependencies (frontend/package.json) ---
+# Core Framework & UI
+next == 16.2.6
+react == 19.2.6
+react-dom == 19.2.6
+tailwindcss == 4.0.0
+@tailwindcss/postcss == 4.0.0
+framer-motion == 12.38.0
+lucide-react == 1.16.0
+
+# Export & PDF Generation
+jspdf == 4.2.1
+html2canvas == 1.4.1
+
+# --- Dev Tooling & Testing ---
+typescript == 6.0.3
+drizzle-kit == 0.31.10
+tsx == 4.22.2
+vitest == 4.1.6
+eslint == 10.4.0
+pino-pretty == 13.1.3
