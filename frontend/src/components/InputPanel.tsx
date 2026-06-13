@@ -1,8 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Sparkles, Activity, Trash2, Clock, CheckCircle, XCircle, Loader2 } from "lucide-react";
 import { BrandData } from "@/lib/types";
-import { getUser, logout } from "@/lib/auth";
-import { useRouter } from "next/navigation";
 
 interface InputPanelProps {
   onGenerate: (data: BrandData) => void;
@@ -19,26 +17,12 @@ function StatusIcon({ status }: { status: string }) {
 }
 
 export default function InputPanel({ onGenerate, isGenerating, sessions = [], onSelectSession, onDeleteSession }: InputPanelProps) {
-  const router = useRouter();
-  const [username, setUsername] = useState("");
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [formData, setFormData] = useState<BrandData>({
     startupName: "",
     industry: "",
     valueProp: "",
   });
-
-  useEffect(() => {
-    const user = getUser();
-    if (user) {
-      setUsername(user.username);
-    }
-  }, []);
-
-  const handleLogout = () => {
-    logout();
-    router.push("/login");
-  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -71,23 +55,6 @@ export default function InputPanel({ onGenerate, isGenerating, sessions = [], on
         </div>
       </div>
 
-      {username && (
-        <div className="flex items-center justify-between mb-8 pb-4 border-b border-slate-800/80">
-          <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded-full bg-blue-500/20 border border-blue-500/30 flex items-center justify-center text-[10px] text-blue-300 font-bold uppercase">
-              {username[0]}
-            </div>
-            <span className="text-xs font-semibold text-slate-300">@{username}</span>
-          </div>
-          <button
-            type="button"
-            onClick={handleLogout}
-            className="text-[10px] text-slate-500 hover:text-red-400 transition-colors font-semibold uppercase tracking-wider cursor-pointer"
-          >
-            Sign Out
-          </button>
-        </div>
-      )}
 
       {sessions.length > 0 && (
         <div className="mb-8 pb-6 border-b border-slate-800/80">

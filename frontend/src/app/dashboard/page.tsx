@@ -8,7 +8,7 @@ import OutputPanel from "@/components/OutputPanel";
 import { MockData } from "@/lib/mockData";
 import { AppState, AgentsState, BrandData } from "@/lib/types";
 import ExportButton from "@/components/ExportButton";
-import { isAuthenticated, getAuthHeaders, logout } from "@/lib/auth";
+import { isAuthenticated, getAuthHeaders, logout, getUser } from "@/lib/auth";
 
 /**
  * Maps the compact backend GenerateResult into the richer MockData shape
@@ -132,6 +132,7 @@ export default function Dashboard() {
   const [appState, setAppState] = useState<AppState>("idle");
   const [brandData, setBrandData] = useState<BrandData>({ startupName: "", industry: "", valueProp: "" });
   const [mockOutput, setMockOutput] = useState<MockData | null>(null);
+  const [username, setUsername] = useState("");
   
   const [agents, setAgents] = useState<AgentsState>({
     research: "idle",
@@ -142,6 +143,11 @@ export default function Dashboard() {
   });
 
   const pollIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  const handleLogout = () => {
+    logout();
+    router.push("/login");
+  };
 
   const fetchSessions = async () => {
     try {
@@ -168,6 +174,10 @@ export default function Dashboard() {
     } else {
       setIsAuthorized(true);
       fetchSessions();
+      const user = getUser();
+      if (user) {
+        setUsername(user.username);
+      }
     }
 
     return () => {
@@ -392,20 +402,60 @@ export default function Dashboard() {
       </section>
 
       {/* Right Panel: Output Feed */}
-      <section className="flex-1 h-full bg-slate-50/50 relative overflow-y-auto scroll-smooth">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-blue-100/40 via-transparent to-transparent pointer-events-none fixed" />
-        {/* Export bar */}
-        {appState === "done" && mockOutput && (
-          <div className="sticky top-0 z-20 flex justify-end px-10 py-4 bg-white/80 backdrop-blur border-b border-slate-100">
-            <ExportButton data={brandData} mock={mockOutput} />
+      <section className="flex-1 h-full bg-slate-50/50 relative flex flex-col overflow-hidden">
+        {/* Top Header: Workspace Info + User Profile & Logout */}
+        <header className="flex-shrink-0 z-20 flex justify-between items-center px-10 py-4 bg-white/90 backdrop-blur border-b border-slate-100/80 shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+              Workspace
+            </span>
+            {appState === "done" && (
+              <>
+                <span className="text-slate-300">/</span>
+                <span className="text-xs font-bold text-blue-600 bg-blue-50 px-2.5 py-0.5 rounded-full border border-blue-100">
+                  Brand Kit Ready
+                </span>
+              </>
+            )}
           </div>
-        )}
-        {mockOutput && (
-          <OutputPanel agents={agents} data={brandData} mockOutput={mockOutput} />
-        )}
-        {!mockOutput && (
-          <div className="h-full flex flex-col items-center justify-center text-slate-400">
-            <p>Awaiting initialization...</p>
+          
+          {username && (
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-full bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-xs text-blue-600 font-bold uppercase shadow-sm">
+                  {username[0]}
+                </div>
+                <span className="text-xs font-semibold text-slate-700">@{username}</span>
+              </div>
+              <div className="h-4 w-[1px] bg-slate-200" />
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="text-xs text-slate-500 hover:text-red-500 transition-colors font-semibold uppercase tracking-wider cursor-pointer"
+              >
+                Sign Out
+              </button>
+            </div>
+          )}
+        </header>
+
+        {/* Scrollable Content Area */}
+        <div className="flex-1 overflow-y-auto scroll-smooth relative">
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-blue-100/40 via-transparent to-transparent pointer-events-none" />
+          
+          {mockOutput ? (
+            <OutputPanel agents={agents} data={brandData} mockOutput={mockOutput} />
+          ) : (
+            <div className="h-full flex flex-col items-center justify-center text-slate-400">
+              <p className="text-sm font-medium">Awaiting initialization...</p>
+            </div>
+          )}
+        </div>
+
+        {/* Floating Export Button (Bottom Right) */}
+        {appState === "done" && mockOutput && (
+          <div className="absolute bottom-6 right-8 z-30 shadow-lg hover:shadow-xl transition-all duration-200 scale-100 hover:scale-105 active:scale-95">
+            <ExportButton data={brandData} mock={mockOutput} />
           </div>
         )}
       </section>
