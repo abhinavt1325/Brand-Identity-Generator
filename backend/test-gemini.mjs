@@ -1,4 +1,6 @@
 import OpenAI from "openai";
+import dotenv from "dotenv";
+dotenv.config();
 import { zodToJsonSchema } from "zod-to-json-schema";
 import { z } from "zod";
 
@@ -50,7 +52,7 @@ Do NOT return keys like startup_name, target_audience, competitor_analysis, or m
     researchSchema.parse(parsed);
     console.log("ZOD PARSE SUCCESS!");
   } catch (e) {
-    console.error("ERROR:", e.message);
+    console.error("ERROR:", e);
   }
 }
 

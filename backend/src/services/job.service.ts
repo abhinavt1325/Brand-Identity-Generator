@@ -24,28 +24,27 @@ export class JobService {
       await jobStore.updateJobResult(jobId, { strategy });
       await jobStore.updateJobStage(jobId, 'strategy', 'completed');
 
-      // Design & Copy in parallel
+      // Design
       await jobStore.updateJobStage(jobId, 'design', 'processing');
+      const design = await designAgent(input, strategy).then(async res => {
+        await jobStore.updateJobResult(jobId, { design: res });
+        await jobStore.updateJobStage(jobId, 'design', 'completed');
+        return res;
+      }).catch(async err => {
+        await jobStore.updateJobStage(jobId, 'design', 'failed');
+        throw err;
+      });
+
+      // Copy
       await jobStore.updateJobStage(jobId, 'copy', 'processing');
-      
-      const [design, copy] = await Promise.all([
-        designAgent(input, strategy).then(async res => {
-          await jobStore.updateJobResult(jobId, { design: res });
-          await jobStore.updateJobStage(jobId, 'design', 'completed');
-          return res;
-        }).catch(async err => {
-          await jobStore.updateJobStage(jobId, 'design', 'failed');
-          throw err;
-        }),
-        copyAgent(input, strategy).then(async res => {
-          await jobStore.updateJobResult(jobId, { copy: res });
-          await jobStore.updateJobStage(jobId, 'copy', 'completed');
-          return res;
-        }).catch(async err => {
-          await jobStore.updateJobStage(jobId, 'copy', 'failed');
-          throw err;
-        })
-      ]);
+      const copy = await copyAgent(input, strategy).then(async res => {
+        await jobStore.updateJobResult(jobId, { copy: res });
+        await jobStore.updateJobStage(jobId, 'copy', 'completed');
+        return res;
+      }).catch(async err => {
+        await jobStore.updateJobStage(jobId, 'copy', 'failed');
+        throw err;
+      });
 
       // Coherence
       await jobStore.updateJobStage(jobId, 'coherence', 'processing');

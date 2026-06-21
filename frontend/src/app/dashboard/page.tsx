@@ -9,6 +9,8 @@ import { MockData } from "@/lib/mockData";
 import { AppState, AgentsState, BrandData } from "@/lib/types";
 import ExportButton from "@/components/ExportButton";
 import { isAuthenticated, getAuthHeaders, logout, getUser } from "@/lib/auth";
+import { AnimatePresence } from "framer-motion";
+import PricingModal from "@/components/PricingModal";
 
 /**
  * Maps the compact backend GenerateResult into the richer MockData shape
@@ -54,17 +56,40 @@ function transformApiResult(raw: any): MockData {
     .map((w: string) => w.trim())
     .filter((w: string) => w.length > 2)
     .slice(0, 5);
-
-  // --- Design ---
-  const colorPalette = d.colorPalette ?? [];
-  const primaryPalette: MockData["design"]["primaryPalette"] = colorPalette.map(
-    (col: { hex: string; name: string }) => ({
+  const colorPalette = Array.isArray(d.colorPalette) ? d.colorPalette : [];
+  const defaultColors = [
+    { hex: "#0F172A", name: "Midnight Navy" },
+    { hex: "#3B82F6", name: "Electric Blue" },
+    { hex: "#F8FAFC", name: "Frost White" },
+    { hex: "#1E293B", name: "Slate Charcoal" },
+    { hex: "#F59E0B", name: "Golden Amber" },
+  ];
+  let safePalette = [...colorPalette];
+  if (safePalette.length < 5) {
+    for (let i = safePalette.length; i < 5; i++) {
+      safePalette.push(defaultColors[i]);
+    }
+  }
+  if (safePalette.length > 5) {
+    safePalette = safePalette.slice(0, 5);
+  }
+  // First 3 colors → primary palette, last 2 → secondary palette
+  const usageLabels = ["Dominant", "Accent", "Background", "Text", "Highlight"];
+  const primaryPalette: MockData["design"]["primaryPalette"] = safePalette
+    .slice(0, 3)
+    .map((col: { hex: string; name: string }, i: number) => ({
       hex: col.hex,
       name: col.name,
-      usage: "Brand color",
-    })
-  );
-  const typography = d.typography ?? { heading: "Inter", body: "Roboto" };
+      usage: usageLabels[i] ?? "Brand color",
+    }));
+  const secondaryPalette: MockData["design"]["secondaryPalette"] = safePalette
+    .slice(3)
+    .map((col: { hex: string; name: string }, i: number) => ({
+      hex: col.hex,
+      name: col.name,
+      usage: usageLabels[3 + i] ?? "Supporting color",
+    }));
+  const typography = d.typography ?? { heading: "Space Grotesk", body: "Inter" };
 
   // --- Coherence ---
   const alignmentMetrics: { label: string; value: number }[] = co.alignmentMetrics ?? [];
@@ -91,17 +116,17 @@ function transformApiResult(raw: any): MockData {
     },
     design: {
       primaryPalette,
-      secondaryPalette: [],
+      secondaryPalette,
       typography: {
-        heading: typography.heading ?? "Inter",
-        body: typography.body ?? "Roboto",
+        heading: typography.heading ?? "Space Grotesk",
+        body: typography.body ?? "Inter",
         accent: "JetBrains Mono",
         headingExample: `The Future of ${audience.split(" ").slice(0, 3).join(" ") || "Innovation"}`,
         bodyExample: mission || "Building something great.",
       },
-      logoDirection: d.logoDirection ?? "A clean, modern wordmark with geometric accents.",
+      logoDirection: d.logoDirection ?? "A bold geometric monogram using the brand initials, rendered in the primary accent color against a deep background. The wordmark pairs a modern geometric sans-serif with tight tracking for a confident, forward-looking identity.",
       visualLanguage: ["Clean layouts", "Bold typography", "Strategic use of color", "Modern aesthetic"],
-      moodboard: `A modern visual identity combining ${colorPalette.map((c: { name: string }) => c.name).join(", ")} to create a professional and trustworthy brand presence.`,
+      moodboard: `A modern visual identity combining ${safePalette.map((c: { name: string }) => c.name).join(", ")} to create a professional and trustworthy brand presence.`,
     },
     copy: {
       tagline: c.tagline ?? "",
@@ -134,6 +159,25 @@ export default function Dashboard() {
   const [mockOutput, setMockOutput] = useState<MockData | null>(null);
   const [username, setUsername] = useState("");
   
+  const [currentPlan, setCurrentPlan] = useState<string>("Free Trial");
+  const [isPricingOpen, setIsPricingOpen] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("brandforge_plan");
+      if (saved) {
+        setCurrentPlan(saved);
+      }
+    }
+  }, []);
+
+  const handleUpgradePlan = (plan: string) => {
+    setCurrentPlan(plan);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("brandforge_plan", plan);
+    }
+  };
+
   const [agents, setAgents] = useState<AgentsState>({
     research: "idle",
     strategy: "idle",
@@ -421,6 +465,16 @@ export default function Dashboard() {
           
           {username && (
             <div className="flex items-center gap-4">
+              {/* Subscription Pill Button */}
+              <button
+                type="button"
+                onClick={() => setIsPricingOpen(true)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 text-blue-600 border border-blue-200/60 shadow-[0_2px_10px_rgba(59,130,246,0.04)] hover:shadow-[0_4px_12px_rgba(59,130,246,0.12)] active:scale-95 transition-all duration-200 cursor-pointer uppercase tracking-wide shrink-0"
+              >
+                <span>💎 {currentPlan}</span>
+                <span className="text-[9px] text-blue-400">▼</span>
+              </button>
+
               <div className="flex items-center gap-2">
                 <div className="w-7 h-7 rounded-full bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-xs text-blue-600 font-bold uppercase shadow-sm">
                   {username[0]}
@@ -459,6 +513,18 @@ export default function Dashboard() {
           </div>
         )}
       </section>
+
+      {/* Pricing Modal Overlay */}
+      <AnimatePresence>
+        {isPricingOpen && (
+          <PricingModal
+            isOpen={isPricingOpen}
+            onClose={() => setIsPricingOpen(false)}
+            currentPlan={currentPlan}
+            onUpgrade={handleUpgradePlan}
+          />
+        )}
+      </AnimatePresence>
     </main>
   );
 }
