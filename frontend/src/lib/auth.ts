@@ -47,3 +47,6 @@ export function getAuthHeaders(): HeadersInit {
   const token = getToken();
   return token ? { 'Authorization': `Bearer ${token}` } : {};
 }
+
+export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+

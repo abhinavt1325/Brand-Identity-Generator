@@ -8,7 +8,7 @@ import OutputPanel from "@/components/OutputPanel";
 import { MockData } from "@/lib/mockData";
 import { AppState, AgentsState, BrandData } from "@/lib/types";
 import ExportButton from "@/components/ExportButton";
-import { isAuthenticated, getAuthHeaders, logout, getUser } from "@/lib/auth";
+import { isAuthenticated, getAuthHeaders, logout, getUser, API_BASE_URL } from "@/lib/auth";
 import { AnimatePresence } from "framer-motion";
 import PricingModal from "@/components/PricingModal";
 
@@ -195,7 +195,7 @@ export default function Dashboard() {
 
   const fetchSessions = async () => {
     try {
-      const res = await fetch("http://localhost:3001/api/v1/jobs", {
+      const res = await fetch(`${API_BASE_URL}/api/v1/jobs`, {
         headers: getAuthHeaders()
       });
       if (res.status === 401 || res.status === 403) {
@@ -234,7 +234,7 @@ export default function Dashboard() {
 
     pollIntervalRef.current = setInterval(async () => {
       try {
-        const statusRes = await fetch(`http://localhost:3001/api/v1/jobs/${jobId}`, {
+        const statusRes = await fetch(`${API_BASE_URL}/api/v1/jobs/${jobId}`, {
           headers: getAuthHeaders()
         });
 
@@ -259,7 +259,7 @@ export default function Dashboard() {
         if (job.status === "completed") {
           if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
           
-          const resultRes = await fetch(`http://localhost:3001/api/v1/jobs/${jobId}/result`, {
+          const resultRes = await fetch(`${API_BASE_URL}/api/v1/jobs/${jobId}/result`, {
             headers: getAuthHeaders()
           });
 
@@ -299,7 +299,7 @@ export default function Dashboard() {
     });
 
     try {
-      const response = await fetch("http://localhost:3001/api/v1/jobs", {
+      const response = await fetch(`${API_BASE_URL}/api/v1/jobs`, {
         method: "POST",
         headers: { 
           "Content-Type": "application/json",
@@ -332,7 +332,7 @@ export default function Dashboard() {
 
   const handleDeleteSession = async (jobId: string) => {
     try {
-      const res = await fetch(`http://localhost:3001/api/v1/jobs/${jobId}`, {
+      const res = await fetch(`${API_BASE_URL}/api/v1/jobs/${jobId}`, {
         method: "DELETE",
         headers: getAuthHeaders(),
       });
@@ -358,7 +358,7 @@ export default function Dashboard() {
 
   const handleSelectSession = async (jobId: string) => {
     try {
-      const statusRes = await fetch(`http://localhost:3001/api/v1/jobs/${jobId}`, {
+      const statusRes = await fetch(`${API_BASE_URL}/api/v1/jobs/${jobId}`, {
         headers: getAuthHeaders()
       });
 
@@ -388,7 +388,7 @@ export default function Dashboard() {
 
       if (job.status === "completed") {
         setAppState("generating");
-        const resultRes = await fetch(`http://localhost:3001/api/v1/jobs/${jobId}/result`, {
+        const resultRes = await fetch(`${API_BASE_URL}/api/v1/jobs/${jobId}/result`, {
           headers: getAuthHeaders()
         });
 

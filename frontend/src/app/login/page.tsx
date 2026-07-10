@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Sparkles, ArrowRight, Lock, Mail, User } from "lucide-react";
-import { setToken, setUser } from "@/lib/auth";
+import { setToken, setUser, API_BASE_URL } from "@/lib/auth";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -43,8 +43,8 @@ export default function LoginPage() {
 
     try {
       const url = mode === "login"
-        ? "http://localhost:3001/api/v1/auth/login"
-        : "http://localhost:3001/api/v1/auth/signup";
+        ? `${API_BASE_URL}/api/v1/auth/login`
+        : `${API_BASE_URL}/api/v1/auth/signup`;
 
       const body = mode === "login"
         ? { username, password }
