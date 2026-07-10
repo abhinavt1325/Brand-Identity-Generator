@@ -12,6 +12,10 @@
     <a href="#getting-started">Getting Started</a>
   </p>
 
+  <p align="center">
+    <a href="https://brand-identity-generator-zeta.vercel.app/"><strong>Explore the Live App »</strong></a>
+  </p>
+
   [![Next.js 16](https://img.shields.io/badge/Next.js-16-black?style=flat-square&logo=next.js)](https://nextjs.org/)
   [![Fastify](https://img.shields.io/badge/Fastify-API-000000?style=flat-square&logo=fastify)](https://fastify.io/)
   [![Google Gemini](https://img.shields.io/badge/AI-Google_Gemini-4285F4?style=flat-square&logo=google)](https://ai.google.dev/)
@@ -89,6 +93,13 @@ graph TD
 ### AI & LLM integration
 - **Model:** Google `gemini-3.1-flash-lite`
 - **Orchestration:** Custom Multi-Agent Pipeline with structured JSON outputs.
+
+---
+
+## 🌐 Live Deployments
+
+- **Frontend (Vercel):** [brand-identity-generator-zeta.vercel.app](https://brand-identity-generator-zeta.vercel.app)
+- **Backend API (Render):** [brand-identity-generator.onrender.com](https://brand-identity-generator.onrender.com)
 
 ---
 
